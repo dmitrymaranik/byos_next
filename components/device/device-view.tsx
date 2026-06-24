@@ -9,7 +9,7 @@ import { StatusIndicator } from "@/components/common/status-indicator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { UI_REFRESH_FALLBACK_SECONDS } from "@/lib/device/defaults";
+import { NO_DEFAULT_RECIPE_MESSAGE, UI_REFRESH_FALLBACK_SECONDS } from "@/lib/device/defaults";
 import { DeviceDisplayMode } from "@/lib/mixup/constants";
 import {
 	DEFAULT_IMAGE_HEIGHT,
@@ -199,7 +199,7 @@ export default function DeviceView({
 			? `/api/bitmap/mixup/${device.mixup_id}.${imageExtension}?${profileQuery}`
 			: device.screen
 				? `/api/bitmap/${device.screen}.${imageExtension}?${profileQuery}`
-				: errorImageSrc("Device screen is not configured");
+				: errorImageSrc(NO_DEFAULT_RECIPE_MESSAGE);
 
 	return (
 		<div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">

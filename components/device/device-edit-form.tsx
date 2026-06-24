@@ -226,10 +226,10 @@ export default function DeviceEditForm({
 					{isScreenMissing && (
 						<Alert className="rounded-none border-x-0 border-t-0 bg-muted/40 py-3 text-xs">
 							<AlertTriangle />
-							<AlertTitle>Screen not configured</AlertTitle>
+							<AlertTitle>No default recipe</AlertTitle>
 							<AlertDescription>
-								Select a screen in the Content tab to restore previews and
-								device rendering.
+								Choose a default recipe in the Content tab, or use Edit device
+								on the device page.
 							</AlertDescription>
 						</Alert>
 					)}

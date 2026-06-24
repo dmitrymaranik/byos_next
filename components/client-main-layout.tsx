@@ -60,6 +60,7 @@ interface ClientMainLayoutProps {
 		role?: string;
 	} | null;
 	authEnabled: boolean;
+	byosApiServerUrl: string;
 }
 
 export function ClientMainLayout({
@@ -69,6 +70,7 @@ export function ClientMainLayout({
 	toolsComponents,
 	user,
 	authEnabled,
+	byosApiServerUrl,
 }: ClientMainLayoutProps) {
 	const pathname = usePathname() ?? "/";
 	const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
@@ -89,6 +91,7 @@ export function ClientMainLayout({
 				toolsComponents={toolsComponents}
 				user={user}
 				authEnabled={authEnabled}
+				byosApiServerUrl={byosApiServerUrl}
 			/>
 
 			{/* Main area */}

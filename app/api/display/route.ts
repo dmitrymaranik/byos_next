@@ -3,6 +3,7 @@ import { withExplicitUserScope } from "@/lib/database/scoped-db";
 import { checkDbConnection } from "@/lib/database/utils";
 import {
 	DISPLAY_FALLBACK_REFRESH_SECONDS,
+	NO_DEFAULT_RECIPE_MESSAGE,
 	normalizeRefreshSchedule,
 } from "@/lib/device/defaults";
 import { selectDisplayForDevice } from "@/lib/display/select";
@@ -240,6 +241,10 @@ export async function GET(request: Request) {
 			firmwareExtra,
 		);
 	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		if (message === NO_DEFAULT_RECIPE_MESSAGE) {
+			return buildErrorResponse(message, baseUrl, uniqueId);
+		}
 		logError(error instanceof Error ? error : new Error(String(error)), {
 			source: "api/display",
 			metadata: {

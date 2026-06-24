@@ -15,6 +15,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { NO_DEFAULT_RECIPE_MESSAGE } from "@/lib/device/defaults";
 import {
 	DEFAULT_IMAGE_HEIGHT,
 	DEFAULT_IMAGE_WIDTH,
@@ -266,7 +267,7 @@ function buildLatestScreenSrc(
 	}
 
 	if (!device.screen) {
-		params.set("message", "Device screen is not configured");
+		params.set("message", NO_DEFAULT_RECIPE_MESSAGE);
 		return `/api/bitmap/error.png?${params.toString()}`;
 	}
 
