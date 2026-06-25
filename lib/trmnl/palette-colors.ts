@@ -88,3 +88,25 @@ export function resolvePaletteColors(palette: TrmnlPalette): RGB[] | null {
 
 	return null;
 }
+
+/** Gray level count for grayscale palettes, or null for color/continuous palettes. */
+export function getPaletteGrayLevels(
+	palette: TrmnlPalette | null | undefined,
+): number | null {
+	if (!palette) return 2;
+
+	if (palette.colors?.length) {
+		return null;
+	}
+
+	const channelBitDepth = palette.channel_bit_depth;
+	if (typeof channelBitDepth === "number" && channelBitDepth >= 4) {
+		return null;
+	}
+
+	if (typeof palette.grays === "number" && palette.grays > 1) {
+		return palette.grays;
+	}
+
+	return null;
+}
