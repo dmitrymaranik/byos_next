@@ -6,12 +6,14 @@ import {
 } from "@/lib/recipes/constants";
 import { resolveReactRecipe } from "@/lib/recipes/recipe-renderer";
 import { consumeBrowserRenderContext } from "@/lib/recipes/render/browser-context";
+import { getPaletteGrayLevels } from "@/lib/trmnl/palette-colors";
 import { getDeviceProfile } from "@/lib/trmnl/device-profile";
 import {
 	getTrmnlModelClassName,
 	getTrmnlModelStyle,
 } from "@/lib/trmnl/model-css";
 import { createScreenProfile } from "@/lib/trmnl/screen-profile";
+import { DEFAULT_DITHER_SALT } from "@/utils/image-processing";
 
 export default async function RecipePreviewPage({
 	params,
@@ -56,6 +58,18 @@ export default async function RecipePreviewPage({
 		model: profile?.model,
 		palette: profile?.palette,
 	});
+	let renderData = data;
+	if (definition.prepareForDevice) {
+		renderData = await definition.prepareForDevice(data, {
+			levels: getPaletteGrayLevels(profile?.palette),
+			width: screen.physicalWidth,
+			height: screen.physicalHeight,
+			logicalWidth: screen.logicalWidth,
+			logicalHeight: screen.logicalHeight,
+			pixelRatio: screen.pixelRatio,
+			salt: DEFAULT_DITHER_SALT,
+		});
+	}
 	const className = getTrmnlModelClassName(profile?.model);
 	const style = getTrmnlModelStyle(profile?.model);
 
@@ -65,7 +79,7 @@ export default async function RecipePreviewPage({
 			height={screen.logicalHeight}
 			screen={screen}
 			params={parsedParams}
-			data={data}
+			data={renderData}
 		/>
 	);
 	const targetWidth = screen.physicalWidth;

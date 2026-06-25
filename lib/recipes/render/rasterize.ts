@@ -31,23 +31,23 @@ export type RasterizeOptions = {
 	paletteId?: string | null;
 	userId?: string | null;
 } & (
-		| {
+	| {
 			html: string;
 			element?: never;
 			cookies?: string;
-		}
-		| {
+	  }
+	| {
 			html?: never;
 			element: React.ReactElement;
 			cookies?: string;
-		}
-		| {
+	  }
+	| {
 			html?: never;
 			element?: never;
 			browser: { width: number; height: number };
 			cookies?: string;
-		}
-	);
+	  }
+);
 
 export type RasterizeResults = {
 	bitmap: Buffer | null;
