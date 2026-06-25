@@ -6,12 +6,12 @@ import {
 } from "@/lib/recipes/constants";
 import { resolveReactRecipe } from "@/lib/recipes/recipe-renderer";
 import { consumeBrowserRenderContext } from "@/lib/recipes/render/browser-context";
-import { getPaletteGrayLevels } from "@/lib/trmnl/palette-colors";
 import { getDeviceProfile } from "@/lib/trmnl/device-profile";
 import {
 	getTrmnlModelClassName,
 	getTrmnlModelStyle,
 } from "@/lib/trmnl/model-css";
+import { getPaletteGrayLevels } from "@/lib/trmnl/palette-colors";
 import { createScreenProfile } from "@/lib/trmnl/screen-profile";
 import { DEFAULT_DITHER_SALT } from "@/utils/image-processing";
 
