@@ -43,7 +43,7 @@ export async function renderBmp(png: Buffer, options: RenderBmpOptions = {}) {
 		ditheringMethod = DitheringMethod.FLOYD_STEINBERG,
 		inverted = false,
 		grayscale = 2,
-		applyEdgeSnap = true,
+		applyEdgeSnap = false,
 	} = options;
 
 	// Validate grayscale levels
@@ -60,15 +60,11 @@ export async function renderBmp(png: Buffer, options: RenderBmpOptions = {}) {
 
 	// Load image metadata
 	const metadata = await sharp(png).metadata();
-	const isDoubleSize =
-		metadata.width === targetWidth * 2 && metadata.height === targetHeight * 2;
 
-	// Step 1: Resize to the target dimensions if necessary
+	// Resize to target dimensions when the PNG does not already match.
 	let image = sharp(png);
-	if (isDoubleSize) {
-		image = image.resize(targetWidth, targetHeight, {
-			kernel: sharp.kernel.nearest,
-		});
+	if (metadata.width !== targetWidth || metadata.height !== targetHeight) {
+		image = image.resize(targetWidth, targetHeight);
 	}
 
 	const grayscaleImage = await image

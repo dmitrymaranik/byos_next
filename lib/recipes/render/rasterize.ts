@@ -1,8 +1,6 @@
 import type React from "react";
 import { createElement } from "react";
-import sharp from "sharp";
 import { renderHtmlToImage } from "@/lib/recipes/html-screenshot";
-import { getRenderScale } from "@/lib/recipes/render/settings";
 import { renderWithSatori } from "@/lib/recipes/renderers/satori";
 import { renderWithTakumi } from "@/lib/recipes/renderers/takumi";
 import {
@@ -33,23 +31,23 @@ export type RasterizeOptions = {
 	paletteId?: string | null;
 	userId?: string | null;
 } & (
-	| {
+		| {
 			html: string;
 			element?: never;
 			cookies?: string;
-	  }
-	| {
+		}
+		| {
 			html?: never;
 			element: React.ReactElement;
 			cookies?: string;
-	  }
-	| {
+		}
+		| {
 			html?: never;
 			element?: never;
 			browser: { width: number; height: number };
 			cookies?: string;
-	  }
-);
+		}
+	);
 
 export type RasterizeResults = {
 	bitmap: Buffer | null;
@@ -57,15 +55,6 @@ export type RasterizeResults = {
 };
 
 const defaultResults = (): RasterizeResults => ({ bitmap: null, png: null });
-
-function getRasterDimensions(
-	width: number,
-	height: number,
-	settings: RecipeRenderSettings | null | undefined,
-) {
-	const scaleFactor = getRenderScale(settings);
-	return { width: width * scaleFactor, height: height * scaleFactor };
-}
 
 export function getRendererType(): "takumi" | "satori" | "browser" {
 	const renderer = process.env.REACT_RENDERER?.toLowerCase();
@@ -151,7 +140,7 @@ export async function rasterize(
 	const needsBitmap = formats.includes("bitmap");
 	if (!needsPng && !needsBitmap) return results;
 
-	const target = getRasterDimensions(imageWidth, imageHeight, renderSettings);
+	const target = { width: imageWidth, height: imageHeight };
 	const layoutWidth = options.layoutWidth ?? imageWidth;
 	const layoutHeight = options.layoutHeight ?? imageHeight;
 
@@ -225,13 +214,7 @@ export async function rasterize(
 	}
 
 	if (needsPng) {
-		results.png =
-			target.width !== imageWidth
-				? await sharp(pngBuffer)
-						.resize(imageWidth, imageHeight)
-						.png()
-						.toBuffer()
-				: pngBuffer;
+		results.png = pngBuffer;
 	}
 
 	if (needsBitmap) {
@@ -240,7 +223,7 @@ export async function rasterize(
 				ditheringMethod: DitheringMethod.FLOYD_STEINBERG,
 				width: imageWidth,
 				height: imageHeight,
-				applyEdgeSnap: renderSettings?.applyEdgeSnap ?? true,
+				applyEdgeSnap: renderSettings?.applyEdgeSnap ?? false,
 				...(grayscale !== undefined && { grayscale }),
 			});
 		} catch (error) {

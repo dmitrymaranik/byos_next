@@ -9,7 +9,10 @@ import { StatusIndicator } from "@/components/common/status-indicator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { NO_DEFAULT_RECIPE_MESSAGE, UI_REFRESH_FALLBACK_SECONDS } from "@/lib/device/defaults";
+import {
+	NO_DEFAULT_RECIPE_MESSAGE,
+	UI_REFRESH_FALLBACK_SECONDS,
+} from "@/lib/device/defaults";
 import { DeviceDisplayMode } from "@/lib/mixup/constants";
 import {
 	DEFAULT_IMAGE_HEIGHT,

@@ -6,7 +6,6 @@ import {
 } from "@/lib/recipes/constants";
 import { resolveReactRecipe } from "@/lib/recipes/recipe-renderer";
 import { consumeBrowserRenderContext } from "@/lib/recipes/render/browser-context";
-import { getRenderScale } from "@/lib/recipes/render/settings";
 import { getDeviceProfile } from "@/lib/trmnl/device-profile";
 import {
 	getTrmnlModelClassName,
@@ -46,7 +45,6 @@ export default async function RecipePreviewPage({
 
 	const { definition, params: parsedParams, data } = resolved;
 	const Component = definition.Component;
-	const renderScale = getRenderScale(definition.meta.renderSettings ?? null);
 
 	const profile =
 		modelParam || paletteParam
@@ -70,8 +68,8 @@ export default async function RecipePreviewPage({
 			data={data}
 		/>
 	);
-	const targetWidth = screen.physicalWidth * renderScale;
-	const targetHeight = screen.physicalHeight * renderScale;
+	const targetWidth = screen.physicalWidth;
+	const targetHeight = screen.physicalHeight;
 	const scaleX = targetWidth / screen.logicalWidth;
 	const scaleY = targetHeight / screen.logicalHeight;
 	const rendered = (

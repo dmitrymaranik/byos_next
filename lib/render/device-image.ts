@@ -5,6 +5,8 @@ import { type RGB, resolvePaletteColors } from "@/lib/trmnl/palette-colors";
 export type RenderDeviceImageInput = {
 	png: Buffer;
 	profile: DeviceProfile;
+	/** When true, Floyd-Steinberg error diffusion is applied during palette quantization. */
+	dither?: boolean;
 };
 
 export type RenderDeviceImageResult = {
@@ -89,6 +91,30 @@ function nearestColor(color: RGB, palette: Array<RGB & { lab: Lab }>): RGB {
 	return best;
 }
 
+function isGrayscalePalette(palette: RGB[]): boolean {
+	return palette.every((color) => color.r === color.g && color.g === color.b);
+}
+
+function luminance(color: RGB): number {
+	return color.r * 0.299 + color.g * 0.587 + color.b * 0.114;
+}
+
+function nearestGrayscaleColor(color: RGB, palette: RGB[]): RGB {
+	const value = luminance(color);
+	let best = palette[0];
+	let bestDistance = Number.POSITIVE_INFINITY;
+
+	for (const candidate of palette) {
+		const distance = Math.abs(value - candidate.r);
+		if (distance < bestDistance) {
+			best = candidate;
+			bestDistance = distance;
+		}
+	}
+
+	return best;
+}
+
 function distributeError(
 	pixels: Float64Array,
 	width: number,
@@ -161,6 +187,7 @@ async function quantizeChannels(
 async function quantizeToPalette(
 	png: Buffer,
 	paletteColors: RGB[],
+	dither = false,
 ): Promise<Buffer> {
 	const source = await sharp(png)
 		.removeAlpha()
@@ -171,6 +198,7 @@ async function quantizeToPalette(
 		...color,
 		lab: rgbToLab(color),
 	}));
+	const grayscalePalette = isGrayscalePalette(paletteColors);
 	const pixels = new Float64Array(source.data.length);
 
 	for (let index = 0; index < source.data.length; index++) {
@@ -187,22 +215,26 @@ async function quantizeToPalette(
 				g: clampByte(pixels[index + 1]),
 				b: clampByte(pixels[index + 2]),
 			};
-			const nextColor = nearestColor(oldColor, palette);
+			const nextColor = grayscalePalette
+				? nearestGrayscaleColor(oldColor, paletteColors)
+				: nearestColor(oldColor, palette);
 
 			output[index] = nextColor.r;
 			output[index + 1] = nextColor.g;
 			output[index + 2] = nextColor.b;
 
-			const error = {
-				r: oldColor.r - nextColor.r,
-				g: oldColor.g - nextColor.g,
-				b: oldColor.b - nextColor.b,
-			};
+			if (dither) {
+				const error = {
+					r: oldColor.r - nextColor.r,
+					g: oldColor.g - nextColor.g,
+					b: oldColor.b - nextColor.b,
+				};
 
-			distributeError(pixels, width, height, x + 1, y, error, 7 / 16);
-			distributeError(pixels, width, height, x - 1, y + 1, error, 3 / 16);
-			distributeError(pixels, width, height, x, y + 1, error, 5 / 16);
-			distributeError(pixels, width, height, x + 1, y + 1, error, 1 / 16);
+				distributeError(pixels, width, height, x + 1, y, error, 7 / 16);
+				distributeError(pixels, width, height, x - 1, y + 1, error, 3 / 16);
+				distributeError(pixels, width, height, x, y + 1, error, 5 / 16);
+				distributeError(pixels, width, height, x + 1, y + 1, error, 1 / 16);
+			}
 		}
 	}
 
@@ -246,18 +278,19 @@ async function encode(
 export async function renderDeviceImage({
 	png,
 	profile,
+	dither = false,
 }: RenderDeviceImageInput): Promise<RenderDeviceImageResult> {
 	const transformed = await transformToDeviceCanvas(png, profile);
 	const palette = profile.palette ?? { id: "", name: "" };
 	const paletteColors = resolvePaletteColors(palette);
 
 	// Three quantization paths:
-	//   1. Discrete palette (BW, color-6a, etc.) — LAB-distance match + dither.
+	//   1. Discrete palette (BW, color-6a, etc.) — LAB nearest-color; optional FS dither.
 	//   2. Continuous palette (color-12bit) — per-channel rounding to RGB444.
 	//   3. Continuous 24-bit or no palette — pass through full color.
 	let quantized: Buffer;
 	if (paletteColors && profile.model.bit_depth < 24) {
-		quantized = await quantizeToPalette(transformed, paletteColors);
+		quantized = await quantizeToPalette(transformed, paletteColors, dither);
 	} else if (
 		paletteColors === null &&
 		typeof palette.channel_bit_depth === "number" &&

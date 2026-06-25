@@ -150,14 +150,18 @@ export async function renderRecipeForDevice({
 	const renderProfile =
 		width !== undefined || height !== undefined
 			? {
-					...profile,
-					model: {
-						...profile.model,
-						width: width ?? profile.model.width,
-						height: height ?? profile.model.height,
-					},
-				}
+				...profile,
+				model: {
+					...profile.model,
+					width: width ?? profile.model.width,
+					height: height ?? profile.model.height,
+				},
+			}
 			: profile;
+
+	const resolved = await resolveReactRecipe(slug, userId ?? undefined);
+	const dither = resolved?.definition.meta.renderSettings?.dither ?? false;
+
 	const renders = await renderRecipeToImage({
 		slug,
 		imageWidth: renderProfile.model.width,
@@ -171,7 +175,11 @@ export async function renderRecipeForDevice({
 	});
 
 	if (!renders.png) return null;
-	return renderDeviceImage({ png: renders.png, profile: renderProfile });
+	return renderDeviceImage({
+		png: renders.png,
+		profile: renderProfile,
+		dither,
+	});
 }
 
 async function buildLiquidHtml(
